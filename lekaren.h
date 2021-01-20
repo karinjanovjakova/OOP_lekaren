@@ -137,7 +137,7 @@ public:
 
 private:
     Ui::lekarenClass ui;
-    //changes* change = nullptr;
+    Dialog* change = nullptr;
 
 private slots:
     void on_login_clicked();
@@ -152,14 +152,16 @@ private slots:
     void on_rem2_clicked();
 
     void on_actionFile_triggered();
-    //void on_Users_triggered();
-    //void on_UserAdd_triggered();
+    void on_User_triggered();
 
-    //void on_actionObj_triggered();
+    void on_actionTxt_triggered();
 
     void on_reload_clicked();
     void on_checkBox_clicked();
     void on_Save_clicked();
+    void changeAccepted();
+
+    void on_rem3_clicked();
 };
 
 class staff : public admin

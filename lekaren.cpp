@@ -1,15 +1,10 @@
 #include "lekaren.h"
-//chyba: pridanie noveho uzivatela, zmena existujuceho zakaznika na premium 
+//chyba: zmena existujuceho zakaznika na premium 
 
 lekaren::lekaren(QWidget* parent) : QMainWindow(parent)
 {
     ui.setupUi(this);
     start();
-}
-
-changes::changes(QWidget* parent) : QDialog(parent)
-{
-    ui2->setupUi(this);
 }
 
 void lekaren::ReloadComboBox() {
@@ -44,6 +39,7 @@ void lekaren:: fill_table_admin() {     //vypise nazvy liekov so sklad. zasobami
 }
 
 void lekaren::fill_table_zak() {        //vypise nazvy liekov s cenami
+    ui.table->clear();
     ui.table->setRowCount(lieky.size());
     ui.table->setColumnCount(2);
     int i,a;
@@ -78,7 +74,7 @@ void info(QString text) {
     QMessageBox msgWarning;
     msgWarning.setText(text);
     msgWarning.setIcon(QMessageBox::Information);
-    msgWarning.setWindowTitle("Caution");
+    msgWarning.setWindowTitle("Information");
     msgWarning.exec();
 }
 
@@ -136,7 +132,6 @@ void lekaren::liekyload(){
         sklad.append(ks);
     }
     file.close();
-    //qDebug() << lieky << sklad;
 }
 
 QString lekaren::encrypt(QString heslo)
@@ -157,9 +152,8 @@ void lekaren::start() {            //pociatocne podmienky ui
     ui.login->setDisabled(false);
     ui.logout->setDisabled(true);
     ui.actionFile->setDisabled(true);
-    ui.UserAdd->setDisabled(true);
-    ui.Users->setDisabled(true);
-    ui.actionObj->setDisabled(true);
+    ui.actionTxt->setDisabled(true);
+    ui.User->setDisabled(true);
     ui.groupBox_3->setTitle(u8"N·kup");
     ui.rem2->setText(u8"Odstr·niù");
     ui.lineEditName->setDisabled(false);
@@ -168,6 +162,7 @@ void lekaren::start() {            //pociatocne podmienky ui
     ui.lineEditPswd->setText("");
     ui.kosik->clear();
     ui.listWidget->clear();
+    ui.checkBox->setChecked(false);
     ReloadComboUsers();
 }
 
@@ -176,7 +171,6 @@ void lekaren::on_login_clicked()     //prihlasenie, uprava ui podla uzivatela
 
     QString meno = ui.lineEditName->text();
     QString heslo = ui.lineEditPswd->text();
-    //qDebug() << loginy[1]->getpoz() << lieky[3]->getnazov();
     int i=0, index=0;
     bool sedi=false, spravnemeno=false;
     for (i = 0; i < loginy.size(); i++) {
@@ -207,31 +201,35 @@ void lekaren::on_login_clicked()     //prihlasenie, uprava ui podla uzivatela
         ui.groupBox_8->setVisible(false);
         ui.groupBox_9->setVisible(false);
         ui.groupBox_10->setVisible(false);
+        if (objednavky.isEmpty()) {
+            qDebug() << "vykonavam";
+            ui.reload->setDisabled(true);
+            ui.rem2->setDisabled(true);
+        }
         if (loginy[index]->gettyp() == 0) {                 //admin
             ui.actionFile->setDisabled(false);
-            ui.UserAdd->setDisabled(false);
-            ui.Users->setDisabled(false);
+            ui.User->setDisabled(false);
             ui.groupBox_3->setTitle(u8"Aktu·lny sklad");
             ui.groupBox_2->setVisible(false);
             ui.groupBox_3->setVisible(true);
             ui.groupBox_4->setVisible(false);
             ui.Add->setVisible(false);
+            ui.UsersComboBox->setDisabled(false);
             fill_table_admin();
         }
         else if (loginy[index]->gettyp() == 1) {            //staff
-            ui.actionObj->setDisabled(false);
             ui.rem2->setText(u8"Potvrdiù");
             ui.groupBox_3->setVisible(false);
             ui.groupBox_4->setVisible(true);
             ui.groupBox_2->setVisible(false);
             ui.UsersComboBox->setDisabled(true);
+            ui.actionTxt->setDisabled(false);
         }
         else if (loginy[index]->gettyp() == 2) {            //zakaznik
             ui.Add->setDisabled(false);
             ui.kos->setDisabled(false);
             ui.rem->setDisabled(false);
             ui.pay->setDisabled(false);
-            ui.rem2->setDisabled(false);
             ui.groupBox->setVisible(true);
             ui.groupBox_2->setVisible(true);
             ui.groupBox_3->setVisible(true);
@@ -245,7 +243,6 @@ void lekaren::on_login_clicked()     //prihlasenie, uprava ui podla uzivatela
             ui.kos->setDisabled(false);
             ui.rem->setDisabled(false);
             ui.pay->setDisabled(false);
-            ui.rem2->setDisabled(false);
             ui.groupBox->setVisible(true);
             ui.groupBox_2->setVisible(true);
             ui.groupBox_3->setVisible(true);
@@ -266,22 +263,25 @@ void lekaren::on_logout_clicked(){     //navrat na pociatocne ui po odhlaseni
     start(); 
     prihlaseny->clearkos();
     prihlaseny->setsuma(0);
-    info(u8"NepotvrdenÈ zmeny boli zmazanÈ.");  
+    info(u8"NepotvrdenÈ zmeny/n·kupy boli zmazanÈ.");  
 }
 
 void lekaren::on_Add_clicked(){        // pridanie do kosika, doriesit skladove zasoby
     QModelIndex index = ui.table->currentIndex();
-    //qDebug() << index.row();
-    if (sklad[index.row()] == 0)
+    qDebug() << index.row();
+    if (index.row() < 0) 
+        warning("Vyberte produkt.");  
+    else if (sklad[index.row()]==0)
         warning(u8"ºutujeme, produkt uû nie je na sklade.");
-    else
+    else if (sklad[index.row()] > 0) {
         sklad[index.row()]--;
         prihlaseny->append(index.row());
         if (prihlaseny->gettyp() == 2)
             prihlaseny->sumaplus(lieky[index.row()]->getcena());
         else if (prihlaseny->gettyp() == 3)
             prihlaseny->sumaplus(lieky[index.row()]->getcena() * (100 - prihlaseny->getzlava()) * 0.01);
-    qDebug() << prihlaseny->getkos() << sklad;
+    }
+    fill_table_zak();
 }
 
 void lekaren::on_kos_clicked() {      //znovu nacita kosik, teoreticky moze byt presunute do Add
@@ -296,7 +296,6 @@ void lekaren::on_kos_clicked() {      //znovu nacita kosik, teoreticky moze byt 
 
 void lekaren::on_rem_clicked(){        //odstrani polozku z kosika, vrati do skladu
     QModelIndex index = ui.kosik->currentIndex();
-    //qDebug() << index.row() << prihlaseny->getsuma();
     if (!prihlaseny->getkos().empty() && prihlaseny->getkos().size() > index.row()) {
         if (prihlaseny->gettyp()==2)
             prihlaseny->sumaminus(lieky[prihlaseny->getindex(index.row())]->getcena());     
@@ -305,15 +304,15 @@ void lekaren::on_rem_clicked(){        //odstrani polozku z kosika, vrati do skl
         sklad[prihlaseny->getindex(index.row())] = sklad[prihlaseny->getindex(index.row())] + 1;
         prihlaseny->odober(index.row());
         qDebug() << prihlaseny->getkos() << sklad;
-        //qDebug() << index.row() << prihlaseny->getsuma();
     }
     else if (!prihlaseny->getkos().empty() && prihlaseny->getkos().size() <= index.row())
         warning(u8"T·to poloûka uû nie je v koöÌku, stlaËte znovu naËÌtaù.");
     else
         warning(u8"KoöÌk je pr·zdny, najskÙr nieËo pridajte.");
+    fill_table_zak();
 }
 
-void lekaren::on_pay_clicked() {        //spravi z kosika objednavku, do comboboxu nacita objednavky, dorobit moznost zmazania v rem2
+void lekaren::on_pay_clicked() {        //spravi z kosika objednavku, do comboboxu nacita objednavky
     if (prihlaseny->getkos().empty())
         warning(u8"KoöÌk je pr·zdny.");
     else {
@@ -324,6 +323,8 @@ void lekaren::on_pay_clicked() {        //spravi z kosika objednavku, do combobo
         prihlaseny->setsuma(0);
         ui.listWidget->clear();
         ui.comboBox->clear();
+        ui.reload->setDisabled(false);
+        ui.rem2->setDisabled(false);
         
     }   
     ReloadComboBox();
@@ -351,33 +352,37 @@ void lekaren::on_reload_clicked() {     //vypise objednavku do listwidgetu
 
 void lekaren::on_rem2_clicked() {               //remove pre customera, potvrdit pre staff (zmazanie objednavky, zapisanie do suboru)
     int index, i, j;
-    if (prihlaseny->gettyp() == 1) {
+    if (prihlaseny->gettyp() == 1) {        //staff
         index = ui.comboBox->currentIndex();
         QString a = ui.comboBox->currentText();
+        qDebug() << index;
         a += ".txt";
         qDebug() << a;
         QFile file(a);
         if (!file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Append)) {
             warning(u8"Subor sa neotvoril spravne.");
         }
-        else {
+        else {                                 
             for (i = 0; i < loginy.size(); i++) {
                 if (loginy[i]->getlogin() == objednavky[index]->getlogin())
                     loginy[i]->setminute(loginy[i]->getminute() + objednavky[index]->getsum());
             }
             QTextStream out(&file);
+            out << "Objednavka pouzivatela " << objednavky[index]->getlogin() << "\n";
             for (i = 0; i < objednavky[index]->getkos().size(); i++) {
                 j = objednavky[index]->getindex(i);
                 sklad[j]++;
                 out  << lieky[j]->getnazov() << "\n";
             }
             out << u8"Suma objednavky:" << objednavky[index]->getsum() << "\n";
+            out << "***************************************\n";
         }
         objednavky.remove(index);
+        qDebug() << objednavky;
         ReloadComboBox();
         info(u8"Objedn·vka bola potvrden· a zapÌsan· do s˙boru.");
     }
-    if (prihlaseny->gettyp() == 2 || prihlaseny->gettyp() == 3 && !objednavky.isEmpty()) {
+    if (prihlaseny->gettyp() == 2 || prihlaseny->gettyp() == 3 && !objednavky.isEmpty()) {          //zakaznik
         index = ui.comboBox->currentIndex();
         for (i = 0; i < objednavky[index]->getkos().size(); i++) {
             j=objednavky[index]->getindex(i);
@@ -385,8 +390,14 @@ void lekaren::on_rem2_clicked() {               //remove pre customera, potvrdit
         }
         objednavky.remove(index);
         ReloadComboBox();
+        fill_table_zak();
         info(u8"Objedn·vka bola ˙speöne odstr·nen·");
     } 
+    if (objednavky.isEmpty()) {
+        ui.reload->setDisabled(true);
+        ui.rem2->setDisabled(true);
+    }
+    ui.listWidget->clear();
 }
 
 void lekaren::on_checkBox_clicked() {
@@ -577,16 +588,80 @@ void lekaren::on_actionFile_triggered() {      //malo by umoznit nahrat novy txt
     }
 }
 
+void lekaren::on_rem3_clicked() {
+    int i,index,j;
+    index = ui.UsersComboBox->currentIndex();
+    //qDebug() << index;
+    if (loginy[index]->getlogin() == prihlaseny->getlogin()) {
+        warning(u8"Nie je moûnÈ odstr·niù pouûÌvateæa");
+    }
+    else {
+        for (i = 0; i < objednavky.size(); i++) {
+            if (objednavky[i]->getlogin() == loginy[index]->getlogin()) {
+                for (j = 0; j < objednavky[i]->getkos().size(); j++) {
+                    sklad[objednavky[i]->getindex(j)]++;
+                }
+                objednavky.remove(i);
+            }
+        }
+        loginy.remove(index);
+        zapisUsers();
+        ReloadComboUsers();
+        ReloadComboBox();
+    }
+}
 
-/*
-void lekaren::on_Users_triggered() {           //malo by otvorit dialog na zapis noveho uzivatela (one day)
-    change = new changes(this);
+void lekaren::on_User_triggered() {           //malo by otvorit dialog na zapis noveho uzivatela (one day)
+    change = new Dialog(this);
     connect(change, SIGNAL(accepted()), this, SLOT(changeAccepted()));
     change->exec();
 
 }
 
 void lekaren::changeAccepted() {
-    changes* change = new changes(this);
+    int i;
+    bool obsadene=false;
+    Dialog* change = static_cast<Dialog *>(sender());
+    int typ = change->getTyp();
+    QString login = change->getLogin();
+    for (i = 0; i < loginy.size(); i++) {
+        if (login == loginy[i]->getlogin()) {
+            warning(u8"PouûÌvateæ s t˝mto menom uû existuje.");
+            obsadene=true;
+        }
+    } 
+    QString heslo = encrypt(change->getPswd());
+    QString pozicia = change->getPosition();
+    QString meno = change->getName();
+    QString priezvisko = change->getSurname();
+    QString adresa = change->getAdress();
+    float minute = change->getMinute().toFloat();
+    if (!obsadene) {
+        if (typ == 0)
+            loginy.push_back(new admin(typ, login, heslo));
+        else if (typ == 1)
+            loginy.push_back(new staff(typ, login, heslo, pozicia));
+        else if (typ == 2)
+            loginy.push_back(new zakaznik(typ, login, heslo, meno, priezvisko, adresa, minute));
+        else if (typ == 3)
+            loginy.push_back(new premium(typ, login, heslo, meno, priezvisko, adresa, minute));
+        zapisUsers();
+        ReloadComboUsers();
+    }
 }
-*/
+
+void lekaren::on_actionTxt_triggered() {    //vytvori txt s aktualnymi objednavkami
+    QFile zapis("objednavky.txt");
+    if (!zapis.open(QIODevice::WriteOnly))
+        warning(u8"S˙bor sa nepodarilo otvoriù.");
+    else {
+        int i,j;
+        QTextStream out(&zapis);
+        for (i = 0; i < objednavky.size(); i++) {
+            out << "Objednavka pouzivatela: " << objednavky[i]->getlogin() << "\n";
+            for (j = 0; j < objednavky[i]->getkos().size(); j++)
+                out << lieky[objednavky[i]->getindex(j)]->getnazov() << "       " << lieky[i]->getcena() << "\n";
+            out << "**************************\n";
+        }
+    }
+}

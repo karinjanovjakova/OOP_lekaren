@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>653</width>
-    <height>745</height>
+    <width>617</width>
+    <height>771</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -103,19 +103,6 @@
           </widget>
          </item>
          <item>
-          <spacer name="verticalSpacer">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>40</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
           <widget class="QPushButton" name="logout">
            <property name="enabled">
             <bool>false</bool>
@@ -126,17 +113,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="zmeny">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="text">
-            <string>Spravovať údaje</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="verticalSpacer_2">
+          <spacer name="verticalSpacer">
            <property name="orientation">
             <enum>Qt::Vertical</enum>
            </property>
@@ -355,6 +332,13 @@
               </item>
              </layout>
             </item>
+            <item>
+             <widget class="QPushButton" name="rem3">
+              <property name="text">
+               <string>Odstrániť používateľa</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </widget>
          </item>
@@ -439,7 +423,7 @@
          <property name="title">
           <string/>
          </property>
-         <layout class="QHBoxLayout" name="horizontalLayout_14">
+         <layout class="QVBoxLayout" name="verticalLayout_10">
           <item>
            <widget class="QPushButton" name="Save">
             <property name="text">
@@ -460,7 +444,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>653</width>
+     <width>617</width>
      <height>22</height>
     </rect>
    </property>
@@ -469,14 +453,13 @@
      <string>Admin Options</string>
     </property>
     <addaction name="actionFile"/>
-    <addaction name="Users"/>
-    <addaction name="UserAdd"/>
+    <addaction name="User"/>
    </widget>
    <widget class="QMenu" name="menuStaff_Options">
     <property name="title">
      <string>Staff Options</string>
     </property>
-    <addaction name="actionObj"/>
+    <addaction name="actionTxt"/>
    </widget>
    <addaction name="menuAdmin_Options"/>
    <addaction name="menuStaff_Options"/>
@@ -506,7 +489,7 @@
     <string>Spravovať užívateľov</string>
    </property>
   </action>
-  <action name="UserAdd">
+  <action name="User">
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -523,6 +506,19 @@
    </property>
    <property name="text">
     <string>Zobraziť objednávky</string>
+   </property>
+  </action>
+  <action name="actionVytvori_txt">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Vytvoriť .txt</string>
+   </property>
+  </action>
+  <action name="actionTxt">
+   <property name="text">
+    <string>Vygeneruj .txt</string>
    </property>
   </action>
  </widget>
