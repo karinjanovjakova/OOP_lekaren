@@ -4,8 +4,6 @@
 #include "ui_lekaren.h"
 #include "changes.h"
 
-
-
 class objednavka
 {
 private:
@@ -91,7 +89,6 @@ public:
     virtual void setzlava() {};
 };
 
-
 class liek
 {
 private:
@@ -114,7 +111,6 @@ public:
     float getcena() { return cena; };
 };
 
-
 class lekaren : public QMainWindow
 {
     Q_OBJECT
@@ -136,6 +132,7 @@ public:
     QVector <objednavka*> objednavky;
     void ReloadComboBox();
     void ReloadComboUsers();
+    void zapisLieky();
 
 
 private:
@@ -164,7 +161,6 @@ private slots:
     void on_checkBox_clicked();
     void on_Save_clicked();
 };
-
 
 class staff : public admin
 {

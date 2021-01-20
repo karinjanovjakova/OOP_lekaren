@@ -1,5 +1,5 @@
 #include "lekaren.h"
-//chyba: pridanie noveho uzivatela, zmeny liekov (aj s nacitanim suboru), zmena existujuceho zakaznika na premium 
+//chyba: pridanie noveho uzivatela, zmena existujuceho zakaznika na premium 
 
 lekaren::lekaren(QWidget* parent) : QMainWindow(parent)
 {
@@ -49,18 +49,20 @@ void lekaren::fill_table_zak() {        //vypise nazvy liekov s cenami
     int i,a;
     float cena;
     for (i = 0; i < lieky.size(); i++) {
-        QTableWidgetItem* item = new QTableWidgetItem;
-        item->setText(lieky[i]->getnazov());
-        if (prihlaseny->gettyp() == 3) {
-            cena = lieky[i]->getcena() * (100 - prihlaseny->getzlava()) * 0.01;
-        }
-        else
-            cena = lieky[i]->getcena();
-        QTableWidgetItem* item2 = new QTableWidgetItem;
-        item2->setText(QString::number(cena));
+        if (sklad[i] > 0) {
+            QTableWidgetItem* item = new QTableWidgetItem;
+            item->setText(lieky[i]->getnazov());
+            if (prihlaseny->gettyp() == 3) {
+                cena = lieky[i]->getcena() * (100 - prihlaseny->getzlava()) * 0.01;
+            }
+            else
+                cena = lieky[i]->getcena();
+            QTableWidgetItem* item2 = new QTableWidgetItem;
+            item2->setText(QString::number(cena));
 
-        ui.table->setItem(i, 0, item);
-        ui.table->setItem(i, 1, item2);
+            ui.table->setItem(i, 0, item);
+            ui.table->setItem(i, 1, item2);
+        }
     }
 }
 
@@ -260,10 +262,11 @@ void lekaren::on_login_clicked()     //prihlasenie, uprava ui podla uzivatela
 }
 
 void lekaren::on_logout_clicked(){     //navrat na pociatocne ui po odhlaseni
+    zapisLieky();
     start(); 
     prihlaseny->clearkos();
     prihlaseny->setsuma(0);
-    info(u8"Nepotvrdené zmeny boli zmazané.");   
+    info(u8"Nepotvrdené zmeny boli zmazané.");  
 }
 
 void lekaren::on_Add_clicked(){        // pridanie do kosika, doriesit skladove zasoby
@@ -278,7 +281,7 @@ void lekaren::on_Add_clicked(){        // pridanie do kosika, doriesit skladove 
             prihlaseny->sumaplus(lieky[index.row()]->getcena());
         else if (prihlaseny->gettyp() == 3)
             prihlaseny->sumaplus(lieky[index.row()]->getcena() * (100 - prihlaseny->getzlava()) * 0.01);
-    //qDebug() << prihlaseny->getkos() << sklad;
+    qDebug() << prihlaseny->getkos() << sklad;
 }
 
 void lekaren::on_kos_clicked() {      //znovu nacita kosik, teoreticky moze byt presunute do Add
@@ -301,7 +304,7 @@ void lekaren::on_rem_clicked(){        //odstrani polozku z kosika, vrati do skl
             prihlaseny->sumaminus(lieky[prihlaseny->getindex(index.row())]->getcena()*(100-prihlaseny->getzlava())*0.01);
         sklad[prihlaseny->getindex(index.row())] = sklad[prihlaseny->getindex(index.row())] + 1;
         prihlaseny->odober(index.row());
-        //qDebug() << prihlaseny->getkos() << sklad;
+        qDebug() << prihlaseny->getkos() << sklad;
         //qDebug() << index.row() << prihlaseny->getsuma();
     }
     else if (!prihlaseny->getkos().empty() && prihlaseny->getkos().size() <= index.row())
@@ -506,10 +509,72 @@ void lekaren::zapisUsers() {     //zapise loginy do suboru, zavola sa pri uložen
     }
 }
 
-void zapisLieky() {     //zapise lieky nanovo do suboru s upravenym skladom po nakupe alebo cely upraveny po zasahu admina, zavola sa pri odhlaseni
+void lekaren::zapisLieky() {     //zapise lieky nanovo do suboru s upravenym skladom po nakupe alebo cely upraveny po zasahu admina, zavola sa pri odhlaseni
+    QFile zapis("lieky.txt");
+    if (!zapis.open(QIODevice::WriteOnly))
+        warning(u8"Súbor sa nepodarilo otvori.");
+    else {
+        int i;
+        QTextStream out(&zapis);
+        for (i = 0; i < lieky.size(); i++) {
+            out << lieky[i]->getnazov() << "," << lieky[i]->getcena() << "," << sklad[i] << "\n";
+        }
+
+    }
 }
 
 void lekaren::on_actionFile_triggered() {      //malo by umoznit nahrat novy txt s liekmi (one day)
+    QString fileName = QFileDialog::getOpenFileName(this, "Open file", "", tr("Text Files (*.txt; *.csv)"));
+    QFile file(fileName);
+    int i,j, k=lieky.size();
+    bool nasiel = false;
+    if (!file.open(QIODevice::ReadOnly))
+        warning(u8"Súbor sa nepodarilo otvori.");
+    else {
+        QVector<liek*> subor;
+        QVector<liek*> temp;
+        QVector<int> suborsklad;
+        QVector<int> temps;
+        
+        while (!file.atEnd()) {                     //vytvori alternativny sklad zo suboru
+            QString line = file.readLine();
+            QString name = (line.split(',').at(0));
+            float cena = (line.split(',').at(1).toFloat());
+            int ks = (line.split(',').at(2).toInt());
+            subor.push_back(new liek(name, cena));
+            suborsklad.append(ks);
+        }
+        file.close();
+        for (j = 0; j < lieky.size(); j++) {            // vynuluje sklad pre pripad, ze lieky ktore boli na sklade boli vyradene z predaja
+            sklad[j] = 0;
+        }
+        for (i = 0; i < subor.size(); i++) {            //porovna povodny sklad so skladom zo suboru
+            for (j = 0; j < k; j++) {        
+                if (subor[i]->getnazov() == lieky[j]->getnazov()) {     //ak najde zhodne lieky prepise cenu v povodnom sklade a pocet zasob
+                    lieky[j]->setcena(subor[i]->getcena());
+                    sklad[j] = suborsklad[i];
+                    nasiel = true;
+                }
+                if (!nasiel && j == lieky.size() - 1) {     //ak liek doteraz nebol na sklade, prida ho na koniec
+                    QString nazov;  
+                    float cena;
+                    temps.append(suborsklad[i]);
+                    nazov = subor[i]->getnazov();
+                    cena = subor[i]->getcena();
+                    temp.push_back(new liek(nazov, cena));                                         //vytvorit este jeden temp toto nefici
+                }
+            }
+            nasiel = false;
+        }
+        for (i = 0; i < temp.size(); i++) {
+            sklad.append(temps[i]);
+            lieky.push_back(temp[i]);
+        }
+        subor.clear();
+        suborsklad.clear();
+        zapisLieky();
+        fill_table_admin();
+    }
 }
 
 
