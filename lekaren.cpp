@@ -1,5 +1,5 @@
 #include "lekaren.h"
-
+//chyba: pridanie noveho uzivatela, zmeny liekov (aj s nacitanim suboru), zmena existujuceho zakaznika na premium 
 
 lekaren::lekaren(QWidget* parent) : QMainWindow(parent)
 {
@@ -154,7 +154,6 @@ void lekaren::start() {            //pociatocne podmienky ui
     ui.groupBox_5->setVisible(false);
     ui.login->setDisabled(false);
     ui.logout->setDisabled(true);
-    ui.zmeny->setDisabled(true);
     ui.actionFile->setDisabled(true);
     ui.UserAdd->setDisabled(true);
     ui.Users->setDisabled(true);
@@ -216,10 +215,8 @@ void lekaren::on_login_clicked()     //prihlasenie, uprava ui podla uzivatela
             ui.groupBox_4->setVisible(false);
             ui.Add->setVisible(false);
             fill_table_admin();
-
         }
         else if (loginy[index]->gettyp() == 1) {            //staff
-            ui.zmeny->setDisabled(false);
             ui.actionObj->setDisabled(false);
             ui.rem2->setText(u8"Potvrdiù");
             ui.groupBox_3->setVisible(false);
@@ -228,7 +225,6 @@ void lekaren::on_login_clicked()     //prihlasenie, uprava ui podla uzivatela
             ui.UsersComboBox->setDisabled(true);
         }
         else if (loginy[index]->gettyp() == 2) {            //zakaznik
-            ui.zmeny->setDisabled(false);
             ui.Add->setDisabled(false);
             ui.kos->setDisabled(false);
             ui.rem->setDisabled(false);
@@ -243,7 +239,6 @@ void lekaren::on_login_clicked()     //prihlasenie, uprava ui podla uzivatela
             fill_table_zak();
         }
         else if (loginy[index]->gettyp() == 3) {            //premium
-            ui.zmeny->setDisabled(false);
             ui.Add->setDisabled(false);
             ui.kos->setDisabled(false);
             ui.rem->setDisabled(false);
@@ -262,39 +257,13 @@ void lekaren::on_login_clicked()     //prihlasenie, uprava ui podla uzivatela
             start();
         }
     }
-    
-
 }
 
 void lekaren::on_logout_clicked(){     //navrat na pociatocne ui po odhlaseni
-    /*ui.lineEditName->setDisabled(false);
-    ui.lineEditPswd->setDisabled(false);
-    ui.lineEditName->setText("");
-    ui.lineEditPswd->setText("");
-    ui.login->setDisabled(false);
-    ui.logout->setDisabled(true);
-    ui.zmeny->setDisabled(true);
-    ui.Add->setDisabled(true);
-    ui.kos->setDisabled(true);
-    ui.rem->setDisabled(true);
-    ui.pay->setDisabled(true);
-    ui.zmeny->setDisabled(true);
-    ui.actionObj->setDisabled(true);
-    ui.rem2->setDisabled(true);
-    ui.actionFile->setDisabled(true);
-    ui.UserAdd->setDisabled(true);
-    ui.Users->setDisabled(true);
-    ui.groupBox_2->setVisible(true);
-    ui.groupBox_4->setVisible(true);
-    ui.groupBox_3->setTitle(u8"N·kup");
-    ui.Add->setText(u8"Pridaù");*/
-    start();
+    start(); 
     prihlaseny->clearkos();
     prihlaseny->setsuma(0);
-    info(u8"NeodoslanÈ objedn·vky boli zmazanÈ.");
-
-
-    
+    info(u8"NepotvrdenÈ zmeny boli zmazanÈ.");   
 }
 
 void lekaren::on_Add_clicked(){        // pridanie do kosika, doriesit skladove zasoby
@@ -397,9 +366,9 @@ void lekaren::on_rem2_clicked() {               //remove pre customera, potvrdit
             for (i = 0; i < objednavky[index]->getkos().size(); i++) {
                 j = objednavky[index]->getindex(i);
                 sklad[j]++;
-                out << "\n" << lieky[j]->getnazov() ;
+                out  << lieky[j]->getnazov() << "\n";
             }
-            out << u8"\nSuma objednavky:" << objednavky[index]->getsum();
+            out << u8"Suma objednavky:" << objednavky[index]->getsum() << "\n";
         }
         objednavky.remove(index);
         ReloadComboBox();
@@ -417,33 +386,10 @@ void lekaren::on_rem2_clicked() {               //remove pre customera, potvrdit
     } 
 }
 
-void lekaren::fill_data(QString login) {
-    int i,index;
-    for (i = 0; i < loginy.size(); i++) {
-        if (loginy[i]->getlogin() == login)
-            i = index;
-    }
-    if (loginy[index]->gettyp() == 0) {
-        ui.login_2->setText(loginy[index]->getlogin());
-        ui.heslo->setText(loginy[index]->getheslo());
-    }
-    else if (loginy[index]->gettyp() == 1) {
-        ui.login_2->setText(loginy[index]->getlogin());
-        ui.heslo->setText(loginy[index]->getheslo());
-        ui.pozicia->setText(loginy[index]->getpoz());
-    }
-    else if (loginy[index]->gettyp() == 2 || loginy[index]->gettyp() == 3) {
-        ui.login_2->setText(loginy[index]->getlogin());
-        ui.heslo->setText(loginy[index]->getheslo());
-        ui.meno->setText(loginy[index]->getmeno());
-        ui.priezvisko->setText(loginy[index]->getpriezvisko());
-        ui.adresa->setText(loginy[index]->getadresa());
-    }
-}
-
 void lekaren::on_checkBox_clicked() {
     if (ui.checkBox->isChecked()) {//zobraz_podla_uzivatela
         if (prihlaseny->gettyp() == 0) {        //admin musi najskor vybrat z comboboxu
+            ui.UsersComboBox->setDisabled(true);
             int index,typ;
             index = ui.UsersComboBox->currentIndex();
             typ = loginy[index]->gettyp();
@@ -492,7 +438,75 @@ void lekaren::on_checkBox_clicked() {
         ui.groupBox_8->setVisible(false);
         ui.groupBox_9->setVisible(false);
         ui.groupBox_10->setVisible(false);
+        if (prihlaseny->gettyp()==0)
+            ui.UsersComboBox->setDisabled(false);
     }
+}
+
+void lekaren::on_Save_clicked() {
+    int index, typ, i;
+    if (prihlaseny->gettyp() == 0){
+        index = ui.UsersComboBox->currentIndex();
+        typ=loginy[index]->gettyp();
+        if (typ == 0) {
+            loginy[index]->setlogin(ui.login_2->text());
+            loginy[index]->setheslo(encrypt(ui.heslo->text()));
+        }
+        else if (typ == 1) {
+            loginy[index]->setlogin(ui.login_2->text());
+            loginy[index]->setheslo(encrypt(ui.heslo->text()));
+            loginy[index]->setpoz(ui.pozicia->text());
+        }
+        else if (typ == 2 || typ == 3) {
+            loginy[index]->setlogin(ui.login_2->text());
+            loginy[index]->setheslo(encrypt(ui.heslo->text()));
+            loginy[index]->setmeno(ui.meno->text());
+            loginy[index]->setpriezvisko(ui.priezvisko->text());
+            loginy[index]->setadresa(ui.adresa->text());
+        }
+    }
+    else if (prihlaseny->gettyp() == 1){
+        for (i = 0; i < loginy.size(); i++) {
+            if (prihlaseny->getlogin() == loginy[i]->getlogin()) {
+                index = i;
+            }
+            loginy[index]->setpoz(ui.pozicia->text());
+        }
+
+    }
+    else if (prihlaseny->gettyp() == 2 || prihlaseny->gettyp() == 3){
+        for (i = 0; i < loginy.size(); i++) {
+            if (prihlaseny->getlogin() == loginy[i]->getlogin()) {
+                index = i;
+            }
+        }
+        loginy[index]->setmeno(ui.meno->text());
+        loginy[index]->setpriezvisko(ui.priezvisko->text());
+        loginy[index]->setadresa(ui.adresa->text());
+    }
+    zapisUsers();
+}
+
+void lekaren::zapisUsers() {     //zapise loginy do suboru, zavola sa pri uloûenÌ ˙prav v mainwindow a pri uloûenÌ v changes
+    QFile file("doc.txt");
+    if (!file.open(QIODevice::WriteOnly)) {
+        warning(u8"S˙bor sa nepodarilo otvoriù.");
+    }
+    else {
+        int i;
+        QTextStream out(&file);
+        for (i = 0; i < loginy.size(); i++) {
+            if (loginy[i]->gettyp() == 0)
+                out << loginy[i]->gettyp() << "," << loginy[i]->getlogin() << "," << loginy[i]->getheslo() << ",\n";
+            else if (loginy[i]->gettyp() == 1)
+                out << loginy[i]->gettyp() << "," << loginy[i]->getlogin() << "," << loginy[i]->getheslo() << "," << loginy[i]->getpoz() << ",\n";
+            else if (loginy[i]->gettyp() == 2 || loginy[i]->gettyp() == 3)
+                out << loginy[i]->gettyp() << "," << loginy[i]->getlogin() << "," << loginy[i]->getheslo() << "," << loginy[i]->getmeno() << "," << loginy[i]->getpriezvisko() << "," << loginy[i]->getadresa() << "," << loginy[i]->getminute() << "\n";
+        }
+    }
+}
+
+void zapisLieky() {     //zapise lieky nanovo do suboru s upravenym skladom po nakupe alebo cely upraveny po zasahu admina, zavola sa pri odhlaseni
 }
 
 void lekaren::on_actionFile_triggered() {      //malo by umoznit nahrat novy txt s liekmi (one day)
@@ -500,7 +514,7 @@ void lekaren::on_actionFile_triggered() {      //malo by umoznit nahrat novy txt
 
 
 /*
-void lekaren::on_Users_triggered() {           //malo by otvorit dialog (listwdget userov, moznosti zmazat, upravit a pridat noveho) // dialog bude mat 2GrouBoxy, jeden pre admina, druhy vseobecny 
+void lekaren::on_Users_triggered() {           //malo by otvorit dialog na zapis noveho uzivatela (one day)
     change = new changes(this);
     connect(change, SIGNAL(accepted()), this, SLOT(changeAccepted()));
     change->exec();
@@ -511,6 +525,3 @@ void lekaren::changeAccepted() {
     changes* change = new changes(this);
 }
 */
-
-void lekaren::on_zmeny_clicked() {             //malo by otvorit dialog s pristupom k poliam podla typu usera (one day)
-}

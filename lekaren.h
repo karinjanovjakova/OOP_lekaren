@@ -126,6 +126,7 @@ public:
     QVector<admin*> loginy;
     admin* prihlaseny;
     void pouzivatelia();
+    void zapisUsers();
     void start();
     QVector<liek*> lieky;
     QVector<int> sklad;
@@ -134,19 +135,16 @@ public:
     void fill_table_zak();
     QVector <objednavka*> objednavky;
     void ReloadComboBox();
-   // void changeAccepted();
     void ReloadComboUsers();
-    void fill_data(QString login);
 
 
 private:
     Ui::lekarenClass ui;
-    changes* change = nullptr;
+    //changes* change = nullptr;
 
 private slots:
     void on_login_clicked();
     void on_logout_clicked();
-    void on_zmeny_clicked();
 
     void on_Add_clicked();
 
@@ -164,6 +162,7 @@ private slots:
 
     void on_reload_clicked();
     void on_checkBox_clicked();
+    void on_Save_clicked();
 };
 
 
@@ -257,3 +256,4 @@ public:
     int getzlava() { return zlava; };
 
 };
+
