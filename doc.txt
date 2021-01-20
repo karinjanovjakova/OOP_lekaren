@@ -1,0 +1,4 @@
+0,kaja,edb433bdd7c13851c7c68cb31a5acf33a80cd2cc,
+1,pomocnik,ce7c3e1985445c7d8efdac32caf1cf68bbf94dc0,lekarnik
+2,kupujem,e1908ab27eb633fab4df80eb70e01abce821d4f4,Karin,Janovjakova,Hlavna 3 Vrutky,0
+3,kupujem2,9df1ac4df853dbec6fb3fce70cbaa317c1a7201c,Kristina,Novotna,Hlavna 15 Vrutky,150
