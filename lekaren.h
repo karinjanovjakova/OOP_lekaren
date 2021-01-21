@@ -133,6 +133,9 @@ public:
     void ReloadComboBox();
     void ReloadComboUsers();
     void zapisLieky();
+    void reloadkos();
+    void zapisObjednavky();
+    void objednavkyload();
 
 
 private:
@@ -145,7 +148,7 @@ private slots:
 
     void on_Add_clicked();
 
-    void on_kos_clicked();
+    //void on_kos_clicked();
     void on_rem_clicked();
     void on_pay_clicked();
 
